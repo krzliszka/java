@@ -13,10 +13,17 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.awt.event.ActionEvent;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class NewUser extends JFrame {
+	
+	Connection conn = null;
+	PreparedStatement pst = null;
+	ResultSet rs = null;
 
 	private JPanel contentPane;
 	private JTextField firstnameTF;
@@ -50,6 +57,10 @@ public class NewUser extends JFrame {
 	 * Create the frame.
 	 */
 	public NewUser() {
+		
+		conn = DBConnection.ConnectDB();
+		
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -120,29 +131,59 @@ public class NewUser extends JFrame {
 		JButton registerBtn = new JButton("Register");
 		registerBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String firstname = firstnameTF.getText();
-				String lastname = lastnameTF.getText();
-				String username = usernameTF.getText();
-				String password = passwordPF.getText();
-				String email = emailTF.getText();
-				String phonenr = phoneNrTF.getText();
 				
-				try
-				{
-					Class.forName("com.mysql.jdbc.DriverManager"); 
-					String databaseURL = "jdbc:mysql://localhost:8080/plane";
-					Connection con = DriverManager.getConnection(databaseURL,"root","");
-					String insertQuery = "INSERT INTO user_details('','"+firstname+"','"+lastname+"','"+username+"','"+password+"','"+email+"','"+phonenr+"')";
-					Statement stat = con.createStatement();
-					int x = stat.executeUpdate(insertQuery);
-					System.out.print(x);
-					if(x==1) {
-						infoMessage("Success! Information added.", "Alert");
-					}
+				String sql = "INSERT INTO user_details(firstname, lastname, username, password, email, phonenr) VALUES(?,?,?,?,?,?)";
+				
+				try {
+					Statement stat = conn.createStatement();
+					stat.execute("CREATE TABLE IF NOT EXISTS user_details " +
+							"(id INTEGER, firstname TEXT, lastname TEXT, username TEXT, password TEXT, email TEXT, phonenr TEXT)");
+					
+					pst = conn.prepareStatement(sql);
+					pst.setString(1, firstnameTF.getText());
+					pst.setString(2, lastnameTF.getText());
+					pst.setString(3, usernameTF.getText());
+					pst.setString(4, passwordPF.getText());
+					pst.setString(5, emailTF.getText());
+					pst.setString(6, phoneNrTF.getText());
+					
+					pst.execute();
+					JOptionPane.showMessageDialog(null,"Success! Record added.");
+					
+				} catch( Exception exc) {
+					JOptionPane.showMessageDialog(null, exc);
+					
 				}
-				catch(Exception exc) {
-					System.out.print(exc);
-				}
+//				
+//				String firstname = firstnameTF.getText();
+//				String lastname = lastnameTF.getText();
+//				String username = usernameTF.getText();
+//				String password = passwordPF.getText();
+//				String email = emailTF.getText();
+//				String phonenr = phoneNrTF.getText();
+//				
+//				try
+//				{
+//					//Class.forName("org.sql.JDBC"); 
+//					Connection conn = DriverManager.getConnection("jdbc:sqlite:/Users/krzysiek/Desktop/EiT/Programy/JavaEclipse/JavaTestGui/plane.db");
+//					String insertQuery = "INSERT INTO user_details(id,firstname,lastname,username,password,email,phonenr) VALUES(''," + firstname + ", " + lastname + ", " + username + ", " + password + ", " + email + ", " + phonenr + ")";
+//					//String insertQuery = "INSERT INTO user_details (id, firstname, lastname, username, password, email, phonenr)";
+//					Statement stat = conn.createStatement();
+//					stat.execute("CREATE TABLE IF NOT EXISTS user_details " +
+//					"(id INTEGER, firstname TEXT, lastname TEXT, username TEXT, password TEXT, email TEXT, phonenr TEXT)");
+//					int x = stat.executeUpdate(insertQuery);
+//					System.out.print(x);
+//					if(x==1) {
+//						infoMessage("Success! Information added.", "Alert");
+//					}
+//					
+//					stat.close();
+//					conn.close();
+//				}
+//				catch(SQLException exc) {
+//					System.out.print("Something went wrong: " + exc);
+//					exc.printStackTrace();
+//				}
 				
 			}
 		});
